@@ -1,7 +1,7 @@
 {
     "manifest_version":3,
-    "name": "Elrond helpers",
-    "description": "Elrond helper tools in extension form",
+    "name": "MultiversX helpers",
+    "description": "MultiversX helper tools in extension form",
     "version": "0.1",
     "action": {
         "default_icon": "icon.png",
