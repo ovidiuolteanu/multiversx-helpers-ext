@@ -132,7 +132,7 @@ var contextApiNftData = {
     "parentId": "CONTEXT_DATA"
 };
 
-chrome.runtime.onInstalled.addListener(() => {
+
     chrome.contextMenus.create(contextConverters);
     chrome.contextMenus.create(contextBase64ToString);
     chrome.contextMenus.create(contextBase64ToHex);
@@ -147,5 +147,4 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create(contextApiEsdtData);
     chrome.contextMenus.create(contextApiNftData);
 
-    chrome.contextMenus.onClicked.addListener(subMenuHandler)
-});
+    chrome.contextMenus.onClicked.addListener(subMenuHandler);
