@@ -93,7 +93,7 @@ var contextDenominatedToAmount = {
 
 var contextData = {
     "id": "CONTEXT_DATA",
-    "title": "Elrond data",
+    "title": "multiversx data",
     "contexts": ["link", "selection"]
 };
 
