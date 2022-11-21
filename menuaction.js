@@ -51,7 +51,7 @@ function subMenuHandler(info, tab){
 
 var contextConverters = {
     "id": "CONTEXT_CONVERTERS",
-    "title": "Elrond converters",
+    "title": "multiversx converters",
     "contexts": ["selection"],
     "enabled": false
 };
