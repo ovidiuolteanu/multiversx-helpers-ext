@@ -15,7 +15,9 @@
         "activeTab",
         "contextMenus",
         "tabs",
-        "scripting"
+        "scripting",
+        "notifications",
+        "storage"
     ],
     "icons": {
         "128": "icon.png"
