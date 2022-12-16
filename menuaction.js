@@ -345,6 +345,25 @@ function subMenuHandler(info, tab){
         }
         createDecodedNotification(query, data_structure_format, true)
     }
+
+    if (info.menuItemId === "ATTRS_STAKING") {
+        var data_structure_format = {
+            "reward_per_share": "biguint",
+            "compounded_reward": "biguint",
+            "current_farm_amount": "biguint"
+        }
+        createDecodedNotification(query, data_structure_format)
+    }
+
+    if (info.menuItemId === "ATTRS_METASTAKING") {
+        var data_structure_format = {
+            "lp_farm_token_nonce": "u64",
+            "lp_farm_token_amount": "biguint",
+            "staking_farm_token_nonce": "u64",
+            "staking_farm_token_amount": "biguint"
+        }
+        createDecodedNotification(query, data_structure_format)
+    }
  };
 
 // ----------- PRINCIPAL MENU ITEMS ------------------
@@ -417,6 +436,9 @@ function create_context_item(parent, id, title, contexts) {
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKFARM", "Locked EFarm attributes", contexts_ls));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ENERGYUPDATE", "Energy Updated Event data (hex)", contexts_s));
+    chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_STAKING", "Staking token attributes", contexts_s));
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_METASTAKING", "Metastaking token attributes", contexts_s));
     // chrome.contextMenus.create(contextEnergyUpdatedEventAttributes);
 
     chrome.contextMenus.onClicked.addListener(subMenuHandler);
