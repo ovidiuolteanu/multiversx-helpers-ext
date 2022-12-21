@@ -128,6 +128,32 @@ function decode_structure(attributes_hex, decode_struct) {
     return results_dict
 }
 
+function createRawNotification(data) {
+    // chrome.notifications.create(
+    //     "attributes-decode",
+    //     {
+    //         type: "list",
+    //         iconUrl: "icon.png",
+    //         title: "Decoded attributes",
+    //         message: displayMessage,
+    //         items: itemsList
+    //     },
+    //     function () {}
+    // );
+
+    chrome.storage.local.set({
+        'shownItems': data
+        });
+
+        chrome.windows.create({
+            url : "modal.html",
+            focused : true,
+            type : "popup",
+            height: 200,
+            width: 400
+        });
+}
+
 function createDecodedNotification(selection, data_structure_format, hex_data = false) {
 
     let displayMessage = ""
@@ -168,29 +194,7 @@ function createDecodedNotification(selection, data_structure_format, hex_data = 
         };
     }
 
-    // chrome.notifications.create(
-    //     "attributes-decode",
-    //     {
-    //         type: "list",
-    //         iconUrl: "icon.png",
-    //         title: "Decoded attributes",
-    //         message: displayMessage,
-    //         items: itemsList
-    //     },
-    //     function () {}
-    // );
-
-        chrome.storage.local.set({
-        'decodedItems': decodedDataFlat
-        });
-
-        chrome.windows.create({
-            url : "modal.html",
-            focused : true,
-            type : "popup",
-            height: 200,
-            width: 400
-        });
+    createRawNotification(decodedDataFlat)
 }
 
 function subMenuHandler(info, tab){
@@ -208,20 +212,26 @@ function subMenuHandler(info, tab){
     var api_url = "https://" + used_url_prefix + "api.elrond.com"
 
     if (info.menuItemId === "BASE64_TO_STRING")
-        //chrome.tabs.create({url: "http://www.elrond.com/define.php?term=" + query});
-        alert(query);
+        createRawNotification(btoa(query))
+    
+    if (info.menuItemId === "STRING_TO_BASE64")
+        createRawNotification(atob(query))
 
     if (info.menuItemId === "BASE64_TO_HEX")
-        alert(query);
+        createRawNotification(base64ToHex(query))
 
     if (info.menuItemId === "HEX_TO_STRING")
-        alert(query);
+        createRawNotification(hex2a(query))
 
     if (info.menuItemId === "HEX_TO_DECIMAL")
-        alert(query);
+        createRawNotification(h2d(query))
 
-    if (info.menuItemId === "DENOMINATED_TO_AMOUNT")
-        alert(query);
+    if (info.menuItemId === "DENOMINATED_TO_AMOUNT") {
+        if (query.length > 18)
+            var index = query.length - 18
+        var amount = query.slice(0, index) + "." + query.slice(index)
+        createRawNotification(amount)
+    }
 
     if (info.menuItemId === "GW_TRANSACTIONS")
         chrome.tabs.create({url: gateway_url + "/transaction/" + query + "/?withResults=true"});
@@ -229,7 +239,7 @@ function subMenuHandler(info, tab){
     if (info.menuItemId === "API_TRANSACTIONS")
         chrome.tabs.create({url: api_url + "/transactions/" + query});
 
-    if (info.linkUrl){
+    if (info.linkUrl) {
         var link = info.linkUrl;
         query = link.substring(link.lastIndexOf("/")+1);
     }
@@ -372,7 +382,7 @@ var contextConverters = {
     "id": "CONTEXT_CONVERTERS",
     "title": "multiversx converters",
     "contexts": ["selection"],
-    "enabled": false
+    "enabled": true
 };
 
 var contextData = {

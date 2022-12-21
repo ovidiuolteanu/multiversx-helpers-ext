@@ -1,7 +1,7 @@
-var stored = chrome.storage.local.get('decodedItems', function (items) {
+var stored = chrome.storage.local.get('shownItems', function (items) {
     var div=document.createElement("div"); 
     document.body.appendChild(div);
-    div.innerText=items.decodedItems;
+    div.innerText=items.shownItems;
     
     console.log(items);
 });
