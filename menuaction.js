@@ -32,6 +32,22 @@ function h2d(s) {
     return dec;
 }
 
+function d2h(str){ // .toString(16) only works up to 2^53
+    var dec = str.toString().split(''), sum = [], hex = [], i, s
+    while(dec.length){
+        s = 1 * dec.shift()
+        for(i = 0; s || i < sum.length; i++){
+            s += (sum[i] || 0) * 10
+            sum[i] = s % 16
+            s = (s - sum[i]) / 16
+        }
+    }
+    while(sum.length){
+        hex.push(sum.pop().toString(16))
+    }
+    return hex.join('')
+}
+
 function base64ToHex(str) {
     const raw = atob(str);
     let result = '';
@@ -40,6 +56,24 @@ function base64ToHex(str) {
       result += (hex.length === 2 ? hex : '0' + hex);
     }
     return result.toUpperCase();
+}
+
+function amountToDenominated(query) {
+    var amount = query
+    if (query.length > 18) {
+        var index = query.length - 18
+        amount = query.slice(0, index) + "." + query.slice(index)
+    }
+    else
+    {
+        const missing_zeros = 18 - query.length
+        for (let i = 0; i < missing_zeros; i++) {
+            amount = "0" + amount
+        }
+        amount = "0." + amount
+    }
+
+    return amount
 }
 
 function decode_structure(attributes_hex, decode_struct) {
@@ -226,10 +260,11 @@ function subMenuHandler(info, tab){
     if (info.menuItemId === "HEX_TO_DECIMAL")
         createRawNotification(h2d(query))
 
-    if (info.menuItemId === "DENOMINATED_TO_AMOUNT") {
-        if (query.length > 18)
-            var index = query.length - 18
-        var amount = query.slice(0, index) + "." + query.slice(index)
+    if (info.menuItemId === "DECIMAL_TO_HEX")
+        createRawNotification(d2h(query))
+
+    if (info.menuItemId === "AMOUNT_TO_DENOMINATED") {
+        var amount = amountToDenominated(query)
         createRawNotification(amount)
     }
 
@@ -417,10 +452,15 @@ function create_context_item(parent, id, title, contexts) {
 
     chrome.contextMenus.create(contextConverters);
     chrome.contextMenus.create(create_context_item(contextConverters, "BASE64_TO_STRING", "Base64 string to string", contexts_s));
+    chrome.contextMenus.create(create_context_item(contextConverters, "STRING_TO_BASE64", "String to Base64 string", contexts_s));
     chrome.contextMenus.create(create_context_item(contextConverters, "BASE64_TO_HEX", "Base64 string to hex", contexts_s));
+    chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextConverters["id"]});
     chrome.contextMenus.create(create_context_item(contextConverters, "HEX_TO_STRING", "Hex string to string", contexts_s));
+    chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextConverters["id"]});
     chrome.contextMenus.create(create_context_item(contextConverters, "HEX_TO_DECIMAL", "Hex to decimal", contexts_s));
-    chrome.contextMenus.create(create_context_item(contextConverters, "DENOMINATED_TO_AMOUNT", "Denominated amount to amount", contexts_s));
+    chrome.contextMenus.create(create_context_item(contextConverters, "DECIMAL_TO_HEX", "Decimal to hex", contexts_s));
+    chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextConverters["id"]});
+    chrome.contextMenus.create(create_context_item(contextConverters, "AMOUNT_TO_DENOMINATED", "Amount to denominated amount", contexts_s));
 
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all  });
 
