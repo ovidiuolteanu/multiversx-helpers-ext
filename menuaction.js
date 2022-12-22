@@ -6,6 +6,14 @@ function hex2a(hexx) {
     return str;
 }
 
+function a2hex(str) {
+    var result = '';
+    for (var i=0; i<str.length; i++) {
+      result += str.charCodeAt(i).toString(16);
+    }
+    return result;
+}
+
 function h2d(s) {
 
     function add(x, y) {
@@ -45,7 +53,12 @@ function d2h(str){ // .toString(16) only works up to 2^53
     while(sum.length){
         hex.push(sum.pop().toString(16))
     }
-    return hex.join('')
+    var result = hex.join('')
+    
+    if (result.length % 2 != 0)
+        result = "0" + result
+    
+        return result
 }
 
 function base64ToHex(str) {
@@ -246,16 +259,19 @@ function subMenuHandler(info, tab){
     var api_url = "https://" + used_url_prefix + "api.elrond.com"
 
     if (info.menuItemId === "BASE64_TO_STRING")
-        createRawNotification(btoa(query))
+        createRawNotification(atob(query))
     
     if (info.menuItemId === "STRING_TO_BASE64")
-        createRawNotification(atob(query))
+        createRawNotification(btoa(query))
 
     if (info.menuItemId === "BASE64_TO_HEX")
         createRawNotification(base64ToHex(query))
 
     if (info.menuItemId === "HEX_TO_STRING")
         createRawNotification(hex2a(query))
+
+    if (info.menuItemId === "STRING_TO_HEX")
+        createRawNotification(a2hex(query))
 
     if (info.menuItemId === "HEX_TO_DECIMAL")
         createRawNotification(h2d(query))
@@ -456,6 +472,7 @@ function create_context_item(parent, id, title, contexts) {
     chrome.contextMenus.create(create_context_item(contextConverters, "BASE64_TO_HEX", "Base64 string to hex", contexts_s));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextConverters["id"]});
     chrome.contextMenus.create(create_context_item(contextConverters, "HEX_TO_STRING", "Hex string to string", contexts_s));
+    chrome.contextMenus.create(create_context_item(contextConverters, "STRING_TO_HEX", "String to hex string", contexts_s));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextConverters["id"]});
     chrome.contextMenus.create(create_context_item(contextConverters, "HEX_TO_DECIMAL", "Hex to decimal", contexts_s));
     chrome.contextMenus.create(create_context_item(contextConverters, "DECIMAL_TO_HEX", "Decimal to hex", contexts_s));
