@@ -140,6 +140,11 @@ function decode_structure(attributes_hex, decode_struct) {
         return [result_string, index];
     }
 
+    function bech32(attributes, start_index) {
+        let [_, result, index] = fixed_length_primitive(attributes, start_index, 32);
+        return [result, index];
+    }
+
     var results_dict = {};
     var sliding_index = 0;
     var implemented_primitives = {'u8': u8,
@@ -147,6 +152,7 @@ function decode_structure(attributes_hex, decode_struct) {
                               'u32': u32,
                               'u64': u64,
                               'biguint': biguint,
+                              'bech32': bech32,
                               'string': string};
 
     for (const [key, primitive] of Object.entries(decode_struct)) {
@@ -220,7 +226,6 @@ function createDecodedNotification(selection, data_structure_format, hex_data = 
             
             for (const [key, primitive] of Object.entries(decoded)) {
                 if (typeof primitive === 'object') {
-                    console.log(primitive)
                     for (const [_, decoded_structure] of Object.entries(primitive))
                     {
                         for (const [nested_key, nested_primitive] of Object.entries(decoded_structure)) {
@@ -229,7 +234,6 @@ function createDecodedNotification(selection, data_structure_format, hex_data = 
                         }
                     }
                 } else if (typeof primitive != Object) {
-                    console.log(primitive)
                     decodedDataFlat += key.concat(": ", primitive.toString(), " "), function(){};
                     itemsList.push({title: key, message: primitive.toString()});
                 }
@@ -315,7 +319,7 @@ function subMenuHandler(info, tab){
             "compounded_reward": "biguint",
             "current_farm_amount": "biguint",
         }
-        createDecodedNotification(query, data_structure_format, true)
+        createDecodedNotification(query, data_structure_format)
     }
 
     if (info.menuItemId === "ATTRS_FARMV13") {
@@ -327,7 +331,18 @@ function subMenuHandler(info, tab){
             "compounded_reward": "biguint",
             "current_farm_amount": "biguint",
         }
-        createDecodedNotification(query, data_structure_format, true)
+        createDecodedNotification(query, data_structure_format)
+    }
+
+    if (info.menuItemId === "ATTRS_FARMV2") {
+        var data_structure_format = {
+            "reward_per_share": "biguint",
+            "entering_epoch": "u64",
+            "compounded_reward": "biguint",
+            "current_farm_amount": "biguint",
+            "original_owner": "bech32",
+        }
+        createDecodedNotification(query, data_structure_format)
     }
 
     if (info.menuItemId === "ATTRS_LKTOKEN") {
@@ -386,11 +401,33 @@ function subMenuHandler(info, tab){
         createDecodedNotification(query, data_structure_format)
     }
 
-    if (info.menuItemId === "ATTRS_ELKTOKEN") {
+    if (info.menuItemId === "ATTRS_ELKTOKEN" || info.menuItemId === "ATTRS_SLKTOKEN") {
         var data_structure_format = {
             "original_token_id": "string",
             "original_token_nonce": "u64",
             "unlock_epoch": "u64",
+        }
+        createDecodedNotification(query, data_structure_format)
+    }
+
+    if (info.menuItemId === "ATTRS_SLKLP") {
+        var data_structure_format = {
+            "lp_token_id": "string",
+            "first_token_id": "string",
+            "first_token_locked_nonce": "u64",
+            "second_token_id": "string",
+            "second_token_locked_nonce": "u64",
+        }
+        createDecodedNotification(query, data_structure_format)
+    }
+    
+    if (info.menuItemId === "ATTRS_SLKFARM") {
+        var data_structure_format = {
+            "farm_type": "u8",
+            "farm_token_id": "string",
+            "farm_token_nonce": "u64",
+            "farming_token_id": "string",
+            "farming_token_locked_nonce": "u64",
         }
         createDecodedNotification(query, data_structure_format)
     }
@@ -493,6 +530,7 @@ function create_context_item(parent, id, title, contexts) {
     chrome.contextMenus.create(contextAttributes);
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_FARMV12", "FarmV12 Token attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_FARMV13", "FarmV13 Token attributes", contexts_ls));
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_FARMV2", "FarmV2 Token attributes", contexts_ls));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_LKTOKEN", "Locked Token attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_LKLP", "Locked LP attributes", contexts_ls));
@@ -501,6 +539,10 @@ function create_context_item(parent, id, title, contexts) {
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKTOKEN", "Locked EToken attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKLP", "Locked ELP attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKFARM", "Locked EFarm attributes", contexts_ls));
+    chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_SLKTOKEN", "Simple Locked Token attributes", contexts_ls));
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_SLKLP", "Simple Locked LP attributes", contexts_ls));
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_SLKFARM", "Simple Locked Farm attributes", contexts_ls));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ENERGYUPDATE", "Energy Updated Event data (hex)", contexts_s));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
