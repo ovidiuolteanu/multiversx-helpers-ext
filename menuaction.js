@@ -1,3 +1,130 @@
+// Copyright (c) 2017, 2021 Pieter Wuille
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+var CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+var GENERATOR = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+
+const encodings = {
+  BECH32: "bech32",
+  BECH32M: "bech32m",
+};
+
+function getEncodingConst (enc) {
+  if (enc == encodings.BECH32) {
+    return 1;
+  } else if (enc == encodings.BECH32M) {
+    return 0x2bc830a3;
+  } else {
+    return null;
+  }
+}
+
+function polymod (values) {
+  var chk = 1;
+  for (var p = 0; p < values.length; ++p) {
+    var top = chk >> 25;
+    chk = (chk & 0x1ffffff) << 5 ^ values[p];
+    for (var i = 0; i < 5; ++i) {
+      if ((top >> i) & 1) {
+        chk ^= GENERATOR[i];
+      }
+    }
+  }
+  return chk;
+}
+
+function hrpExpand (hrp) {
+  var ret = [];
+  var p;
+  for (p = 0; p < hrp.length; ++p) {
+    ret.push(hrp.charCodeAt(p) >> 5);
+  }
+  ret.push(0);
+  for (p = 0; p < hrp.length; ++p) {
+    ret.push(hrp.charCodeAt(p) & 31);
+  }
+  return ret;
+}
+
+function verifyChecksum (hrp, data, enc) {
+  return polymod(hrpExpand(hrp).concat(data)) === getEncodingConst(enc);
+}
+
+function createChecksum (hrp, data, enc) {
+  var values = hrpExpand(hrp).concat(data).concat([0, 0, 0, 0, 0, 0]);
+  var mod = polymod(values) ^ getEncodingConst(enc);
+  var ret = [];
+  for (var p = 0; p < 6; ++p) {
+    ret.push((mod >> 5 * (5 - p)) & 31);
+  }
+  return ret;
+}
+
+export function encode (hrp, data, enc) {
+  var combined = data.concat(createChecksum(hrp, data, enc));
+  var ret = hrp + '1';
+  for (var p = 0; p < combined.length; ++p) {
+    ret += CHARSET.charAt(combined[p]);
+  }
+  return ret;
+}
+
+function decode (bechString, enc) {
+  var p;
+  var has_lower = false;
+  var has_upper = false;
+  for (p = 0; p < bechString.length; ++p) {
+    if (bechString.charCodeAt(p) < 33 || bechString.charCodeAt(p) > 126) {
+      return null;
+    }
+    if (bechString.charCodeAt(p) >= 97 && bechString.charCodeAt(p) <= 122) {
+        has_lower = true;
+    }
+    if (bechString.charCodeAt(p) >= 65 && bechString.charCodeAt(p) <= 90) {
+        has_upper = true;
+    }
+  }
+  if (has_lower && has_upper) {
+    return null;
+  }
+  bechString = bechString.toLowerCase();
+  var pos = bechString.lastIndexOf('1');
+  if (pos < 1 || pos + 7 > bechString.length || bechString.length > 90) {
+    return null;
+  }
+  var hrp = bechString.substring(0, pos);
+  var data = [];
+  for (p = pos + 1; p < bechString.length; ++p) {
+    var d = CHARSET.indexOf(bechString.charAt(p));
+    if (d === -1) {
+      return null;
+    }
+    data.push(d);
+  }
+  if (!verifyChecksum(hrp, data, enc)) {
+    return null;
+  }
+  return {hrp: hrp, data: data.slice(0, data.length - 6)};
+}
+
+
 function hex2a(hexx) {
     var hex = hexx.toString();//force conversion
     var str = '';
@@ -87,6 +214,38 @@ function amountToDenominated(query) {
     }
 
     return amount
+}
+
+function fromHexString(str) {
+    if (str.length % 2 !== 0 || !/^[0-9a-f]+$/i.test(str)) {
+      return null;
+    }
+    let buffer = [];
+    for (let i = 0; i < str.length / 2; i++) {
+      buffer.push(parseInt(str.substr(2 * i, 2), 16));
+    }
+    return buffer;
+}
+
+function hex_to_bech32(query) {
+    try {
+        const buffer = fromHexString(query);
+        if (!buffer) throw new TypeError('Invalid hex encoding of data');
+
+        const encoding = encodings.BECH32;
+        console.log(buffer)
+        let enc = encode('erd', buffer, encoding);
+        return enc;
+    } catch (e) {
+        console.log('Error: ' + e.message);
+        return;
+    }
+}
+
+function bech32_to_hex(query) {
+    let hrp, decoded_data = decode(query, encodings.BECH32)
+    console.log(hrp, decoded_data)
+    return decoded_data
 }
 
 function decode_structure(attributes_hex, decode_struct) {
@@ -262,6 +421,21 @@ function subMenuHandler(info, tab){
     var gateway_url = "https://" + used_url_prefix + "gateway.elrond.com"
     var api_url = "https://" + used_url_prefix + "api.elrond.com"
 
+    if (tab_url.includes("testnet-do-multi"))
+    {
+        var gateway_url = "https://proxy-do-multi.elrond.ro"
+        var api_url = "https://express-api-multi.elrond.ro"
+    }
+
+    if (tab_url.includes("testnet-do-shadowfork-four"))
+    {
+        var gateway_url = "https://proxy-shadowfork-four.elrond.ro"
+        var api_url = "https://express-api-shadowfork-four.elrond.ro"
+    }
+
+    if (info.menuItemId === "HEX_TO_BECH32")
+        createRawNotification(bech32_to_hex(query))
+    
     if (info.menuItemId === "BASE64_TO_STRING")
         createRawNotification(atob(query))
     
@@ -504,6 +678,7 @@ function create_context_item(parent, id, title, contexts) {
     var contexts_s = ["selection"];
 
     chrome.contextMenus.create(contextConverters);
+    chrome.contextMenus.create(create_context_item(contextConverters, "HEX_TO_BECH32", "Hex string to Bech32 address", contexts_s));
     chrome.contextMenus.create(create_context_item(contextConverters, "BASE64_TO_STRING", "Base64 string to string", contexts_s));
     chrome.contextMenus.create(create_context_item(contextConverters, "STRING_TO_BASE64", "String to Base64 string", contexts_s));
     chrome.contextMenus.create(create_context_item(contextConverters, "BASE64_TO_HEX", "Base64 string to hex", contexts_s));
