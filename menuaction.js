@@ -181,6 +181,19 @@ function decode_structure(attributes_hex, decode_struct) {
     return results_dict
 }
 
+async function httpGet(theUrl) {
+    return await fetch(theUrl);
+}
+
+async function getNftAttributes(api_url, query) {
+    if(query.includes("-")) {
+        let result = await httpGet(api_url + "/nfts/" + query);
+        let data = await result.json()
+        return data.attributes
+    }
+    return query
+}
+
 function createRawNotification(data) {
     // chrome.notifications.create(
     //     "attributes-decode",
@@ -248,7 +261,7 @@ function createDecodedNotification(selection, data_structure_format, hex_data = 
     createRawNotification(decodedDataFlat)
 }
 
-function subMenuHandler(info, tab){
+async function subMenuHandler(info, tab){
     var query = info.selectionText;
     var tab_url = tab.url
 
@@ -261,6 +274,21 @@ function subMenuHandler(info, tab){
 
     var gateway_url = "https://" + used_url_prefix + "gateway.elrond.com"
     var api_url = "https://" + used_url_prefix + "api.elrond.com"
+
+    if (tab_url.includes("testnet-do-multi"))
+    {
+        var gateway_url = "https://proxy-do-multi.elrond.ro"
+        var api_url = "https://express-api-multi.elrond.ro"
+    }
+
+    if (tab_url.includes("testnet-do-shadowfork-four"))
+    {
+        var gateway_url = "https://proxy-shadowfork-four.elrond.ro"
+        var api_url = "https://express-api-shadowfork-four.elrond.ro"
+    }
+
+    if (info.menuItemId === "HEX_TO_BECH32")
+        createRawNotification(bech32_to_hex(query))
 
     if (info.menuItemId === "BASE64_TO_STRING")
         createRawNotification(atob(query))
@@ -319,6 +347,7 @@ function subMenuHandler(info, tab){
             "compounded_reward": "biguint",
             "current_farm_amount": "biguint",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -331,6 +360,7 @@ function subMenuHandler(info, tab){
             "compounded_reward": "biguint",
             "current_farm_amount": "biguint",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -342,6 +372,7 @@ function subMenuHandler(info, tab){
             "current_farm_amount": "biguint",
             "original_owner": "bech32",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -353,6 +384,7 @@ function subMenuHandler(info, tab){
             },
             "is_merged": "u8"
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -363,6 +395,7 @@ function subMenuHandler(info, tab){
             "locked_assets_invested": "biguint",
             "locked_assets_nonce": "u64"
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
     
@@ -375,6 +408,7 @@ function subMenuHandler(info, tab){
             "proxy_token_nonce": "u64",
             "proxy_token_amount": "biguint",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -386,6 +420,7 @@ function subMenuHandler(info, tab){
             "locked_tokens_nonce": "u64",
             "locked_tokens_amount": "biguint",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
     
@@ -398,6 +433,7 @@ function subMenuHandler(info, tab){
             "proxy_token_nonce": "u64",
             "proxy_token_amount": "biguint",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -407,6 +443,7 @@ function subMenuHandler(info, tab){
             "original_token_nonce": "u64",
             "unlock_epoch": "u64",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -418,6 +455,7 @@ function subMenuHandler(info, tab){
             "second_token_id": "string",
             "second_token_locked_nonce": "u64",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
     
@@ -429,6 +467,7 @@ function subMenuHandler(info, tab){
             "farming_token_id": "string",
             "farming_token_locked_nonce": "u64",
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -450,6 +489,7 @@ function subMenuHandler(info, tab){
             "compounded_reward": "biguint",
             "current_farm_amount": "biguint"
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
 
@@ -460,6 +500,7 @@ function subMenuHandler(info, tab){
             "staking_farm_token_nonce": "u64",
             "staking_farm_token_amount": "biguint"
         }
+        query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
  };

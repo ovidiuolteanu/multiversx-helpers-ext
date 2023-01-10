@@ -11,6 +11,11 @@
         "service_worker": "menuaction.js",
         "type": "module"
     },
+    "host_permissions": [
+        "*.elrond.com/*",
+        "*.elrond.ro/*",
+        "*.multiversx.com/*"
+    ],
     "permissions": [
         "activeTab",
         "contextMenus",
