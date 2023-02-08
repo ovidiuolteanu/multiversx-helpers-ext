@@ -577,6 +577,9 @@ function create_context_item(parent, id, title, contexts) {
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_LKLP", "Locked LP attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_LKFARM", "Locked Farm attributes", contexts_ls));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_STAKING", "Staking token attributes", contexts_ls));
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_METASTAKING", "Metastaking token attributes", contexts_ls));
+    chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKTOKEN", "Locked EToken attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKLP", "Locked ELP attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKFARM", "Locked EFarm attributes", contexts_ls));
@@ -586,9 +589,6 @@ function create_context_item(parent, id, title, contexts) {
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_SLKFARM", "Simple Locked Farm attributes", contexts_ls));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ENERGYUPDATE", "Energy Updated Event data (hex)", contexts_s));
-    chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
-    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_STAKING", "Staking token attributes", contexts_s));
-    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_METASTAKING", "Metastaking token attributes", contexts_s));
     // chrome.contextMenus.create(contextEnergyUpdatedEventAttributes);
 
     chrome.contextMenus.onClicked.addListener(subMenuHandler);
