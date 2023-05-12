@@ -275,17 +275,7 @@ async function subMenuHandler(info, tab){
     var gateway_url = "https://" + used_url_prefix + "gateway.elrond.com"
     var api_url = "https://" + used_url_prefix + "api.elrond.com"
 
-    if (tab_url.includes("testnet-do-multi"))
-    {
-        var gateway_url = "https://proxy-do-multi.elrond.ro"
-        var api_url = "https://express-api-multi.elrond.ro"
-    }
-
-    if (tab_url.includes("testnet-do-shadowfork-four"))
-    {
-        var gateway_url = "https://proxy-shadowfork-four.elrond.ro"
-        var api_url = "https://express-api-shadowfork-four.elrond.ro"
-    }
+    
 
     if (info.menuItemId === "HEX_TO_BECH32")
         createRawNotification(bech32_to_hex(query))
@@ -503,6 +493,29 @@ async function subMenuHandler(info, tab){
         query = await getNftAttributes(api_url, query)
         createDecodedNotification(query, data_structure_format)
     }
+
+    if (info.menuItemId === "ATTRS_STAKING_BOOST") {
+        var data_structure_format = {
+            "reward_per_share": "biguint",
+            "compounded_reward": "biguint",
+            "current_farm_amount": "biguint",
+            "original_owner": "bech32"
+        }
+        query = await getNftAttributes(api_url, query)
+        createDecodedNotification(query, data_structure_format)
+    }
+
+    if (info.menuItemId === "ATTRS_METASTAKING_BOOST") {
+        var data_structure_format = {
+            "lp_farm_token_nonce": "u64",
+            "lp_farm_token_amount": "biguint",
+            "virtual_pos_token_nonce": "u64",
+            "virtual_pos_token_amount": "biguint",
+            "real_pos_token_amount": "biguint"
+        }
+        query = await getNftAttributes(api_url, query)
+        createDecodedNotification(query, data_structure_format)
+    }
  };
 
 // ----------- PRINCIPAL MENU ITEMS ------------------
@@ -579,6 +592,8 @@ function create_context_item(parent, id, title, contexts) {
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_STAKING", "Staking token attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_METASTAKING", "Metastaking token attributes", contexts_ls));
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_STAKING_BOOST", "Staking boosted token attributes", contexts_ls));
+    chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_METASTAKING_BOOST", "Metastaking boosted token attributes", contexts_ls));
     chrome.contextMenus.create({id: "s"+(separator_ids++) ,type:"separator", "contexts":contexts_all, "parentId":contextAttributes["id"]});
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKTOKEN", "Locked EToken attributes", contexts_ls));
     chrome.contextMenus.create(create_context_item(contextAttributes, "ATTRS_ELKLP", "Locked ELP attributes", contexts_ls));
